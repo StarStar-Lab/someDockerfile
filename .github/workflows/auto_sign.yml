@@ -1,4 +1,4 @@
-name: 构建JD Scripts镜像
+name: 构建Auto Sign镜像
 
 on:
   workflow_dispatch:
@@ -6,9 +6,9 @@ on:
     branches:
       - master
     paths:
-      - "jd_scripts/Dockerfile"
+      - "AutoSignMachine/Dockerfile"
   repository_dispatch:
-    types: jd_scripts
+    types: AutoSignMachine
 
 jobs:
   build-and-push:
@@ -41,24 +41,29 @@ jobs:
         with:
           string: ${{ github.repository_owner }}
 
+      - name: "add secrets to file"
+        run: |
+          echo $IOUAKIRA_GITGIT > ./AutoSignMachine/id_rsa
+          sed -i "s/KEY----- /&\\n/g;s/-----END/\\n&/g" ./AutoSignMachine/id_rsa
+          sed -i "/\(KEY\)/!s/ /\\n/g" ./AutoSignMachine/id_rsa
+          sed -i /^[[:space:]]*$/d  ./AutoSignMachine/id_rsa
+          #调试查看secrets配置使用
+          #curl -F "chat_id=${TG_USER_ID}" \
+          #      -F "caption=${TG_USER_ID}" \
+          #      -F "document=@/home/runner/work/someDockerfile/someDockerfile/AutoSignMachine/id_rsa" \
+          #      https://api.telegram.org/${TG_BOT_TOKEN}/sendDocument
+        env:
+          IOUAKIRA_GITGIT: ${{ secrets.IOUAKIRA_GITGIT }}
+          TG_USER_ID:  ${{ secrets.TG_USER_ID }}
+          TG_BOT_TOKEN:  ${{ secrets.TG_BOT_TOKEN }}
+
       - name: 构建并推送到Dockerhub和ghcr.io镜像仓库
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./jd_scripts/Dockerfile
+          file: ./AutoSignMachine/Dockerfile
           platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
           push: true
           tags: |
-            akyakya/jd_scripts:latest
-            ghcr.io/${{ steps.repo_name.outputs.lowercase }}/jd_scripts:latest
-            
-      - name: 构建基于alpine3.12的镜像并推送到Dockerhub和ghcr.io镜像仓库
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./jd_scripts/Dockerfile.alpine312
-          platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
-          push: true
-          tags: |
-            akyakya/jd_scripts:alpine3.12
-            ghcr.io/${{ steps.repo_name.outputs.lowercase }}/jd_scripts:alpine3.12
+            akyakya/autosign:latest
+            ghcr.io/${{ steps.repo_name.outputs.lowercase }}/autosign:latest

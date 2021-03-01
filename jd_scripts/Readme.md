@@ -1,2 +1,1 @@
-![Docker Pulls](https://img.shields.io/docker/pulls/akyakya/jd_scripts?style=for-the-badge) 
-## 具体是使用说明[_点这里_](https://github.com/lxk0301/scripts/tree/master/docker#usage)
+本镜像为打包原作者[@lxk0301](https://gitee.com/lxk0301/)的仓库脚本，自用，不提供使用咨询和帮助。

@@ -169,7 +169,7 @@ else
 fi
 
 ##判断汽车之家COOKIE配置之后才会更新相关任务脚本
-if [ 0"$QCZJ_GetUserInfoURL" = "0" ]; then
+if [ 0"$QCZJ_GetUserInfoHEADER" = "0" ]; then
     echo "没有汽车之家Cookie，相关环境变量参数，跳过配置定时任务"
 else
     echo "Pull the qczj latest code..."
@@ -217,13 +217,17 @@ else
     fi
     cp -r /baidu_speed/Task/baidu_speed.js /baidu_speed/Task/baidu_speed_use.js
     sed -i "s/StartBody/BDCookie/g" /baidu_speed/Task/baidu_speed_use.js
-    sed -i "s/.*process.env.BAIDU_COOKIE.indexOf('\\\n')/else&/g" /baidu_speed/Task/baidu_speed_use.js
+    #直接插入提现，
+    sed -i "/await\ userInfo/i\\      if (\$.time(\"HH\") == \"06\") { await withDraw(withcash); } ;" /baidu_speed/Task/baidu_speed_use.js
+    #sed -i "s/.*process.env.BAIDU_COOKIE.indexOf('\\\n')/else&/g" /baidu_speed/Task/baidu_speed_use.js
 
     if [ 0"$BAIDU_CRON" = "0" ]; then
         BAIDU_CRON="10 7-22 * * *"
     fi
     echo -e >>$defaultListFile
     echo "$BAIDU_CRON sleep \$((RANDOM % 120)); node /baidu_speed/Task/baidu_speed_use.js >> /logs/baidu_speed.log 2>&1" >>$defaultListFile
+    #增加一个不带随机延迟任务是为了6点抢提现使用
+    echo "0 6 * * * node /baidu_speed/Task/baidu_speed_use.js >> /logs/baidu_speed.log 2>&1" >>$defaultListFile
 fi
 
 ##判断聚看点@sunert版本COOKIE配置之后才会更新相关任务脚本
